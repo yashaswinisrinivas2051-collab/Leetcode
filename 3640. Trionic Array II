@@ -1,0 +1,32 @@
+class Solution:
+    def maxSumTrionic(self, nums: List[int]) -> int:
+        n = len(nums)
+        NEG = float('-inf')
+
+        incL = [NEG] * n      # increasing ending at i
+        incR = [NEG] * n      # increasing starting at i
+        incDec = [NEG] * n   # increasing then decreasing ending at i
+
+        # Increasing subarray ending at i
+        for i in range(1, n):
+            if nums[i-1] < nums[i]:
+                incL[i] = max(nums[i-1] + nums[i], incL[i-1] + nums[i])
+
+        # Increasing subarray starting at i
+        for i in range(n-2, -1, -1):
+            if nums[i] < nums[i+1]:
+                incR[i] = max(nums[i] + nums[i+1], incR[i+1] + nums[i])
+
+        # Increasing then decreasing
+        for i in range(1, n):
+            if nums[i-1] > nums[i]:
+                incDec[i] = max(incL[i-1] + nums[i], incDec[i-1] + nums[i])
+
+        # Final answer
+        ans = NEG
+        for i in range(n):
+            if incDec[i] != NEG and incR[i] != NEG:
+                ans = max(ans, incDec[i] + incR[i] - nums[i])
+
+        return ans
+        
