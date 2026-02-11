@@ -1,0 +1,62 @@
+from typing import List
+
+class SegmentTree:
+    def __init__(self, n):
+        self.n = n
+        self.mx = [0] * (4 * n)
+        self.mn = [0] * (4 * n)
+        self.lazy = [0] * (4 * n)
+
+    def push(self, node, l, r):
+        if self.lazy[node] != 0:
+            v = self.lazy[node]
+            self.mx[node] += v
+            self.mn[node] += v
+            if l != r:
+                self.lazy[node*2] += v
+                self.lazy[node*2+1] += v
+            self.lazy[node] = 0
+
+    def range_add(self, node, l, r, ql, qr, val):
+        self.push(node, l, r)
+        if r < ql or l > qr:
+            return
+        if ql <= l and r <= qr:
+            self.lazy[node] += val
+            self.push(node, l, r)
+            return
+
+        mid = (l + r) // 2
+        self.range_add(node*2, l, mid, ql, qr, val)
+        self.range_add(node*2+1, mid+1, r, ql, qr, val)
+        self.mx[node] = max(self.mx[node*2], self.mx[node*2+1])
+        self.mn[node] = min(self.mn[node*2], self.mn[node*2+1])
+
+    def left_zero(self, node, l, r):
+        self.push(node, l, r)
+        if self.mn[node] > 0 or self.mx[node] < 0:
+            return -1
+        if l == r:
+            return l
+        mid = (l + r) // 2
+        left = self.left_zero(node*2, l, mid)
+        if left != -1:
+            return left
+        return self.left_zero(node*2+1, mid+1, r)
+
+class Solution:
+    def longestBalanced(self, nums: List[int]) -> int:
+        n = len(nums)
+        st = SegmentTree(n)
+        last_pos = {}
+        ans = 0
+        for r, x in enumerate(nums):
+            val = 1 if x % 2 == 0 else -1
+            if x in last_pos:
+                st.range_add(1, 0, n-1, 0, last_pos[x], -val)
+            st.range_add(1, 0, n-1, 0, r, val)
+            last_pos[x] = r
+            l = st.left_zero(1, 0, n-1)
+            if l != -1:
+                ans = max(ans, r - l + 1)
+        return ans
