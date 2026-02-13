@@ -1,0 +1,47 @@
+class Solution:
+    def longestBalanced(self, s: str) -> int:
+        n = len(s)
+        if n == 0:
+            return 0
+        ans = 1  
+        cnt = 1
+        for i in range(1, n):
+            if s[i] == s[i - 1]:
+                cnt += 1
+            else:
+                cnt = 1
+            ans = max(ans, cnt)
+        def two_char(a, b):
+            balance = 0
+            seen = {0: -1}
+            best = 0
+            for i, ch in enumerate(s):
+                if ch == a:
+                    balance += 1
+                elif ch == b:
+                    balance -= 1
+                else:
+                    balance = 0
+                    seen = {0: i}
+                    continue
+                if balance in seen:
+                    best = max(best, i - seen[balance])
+                else:
+                    seen[balance] = i
+            return best
+        ans = max(ans, two_char('a', 'b'))
+        ans = max(ans, two_char('a', 'c'))
+        ans = max(ans, two_char('b', 'c'))
+        cnts = [0, 0, 0]
+        diff_map = {(0, 0): -1}
+        for i, ch in enumerate(s):
+            idx = ord(ch) - ord('a')
+            cnts[idx] += 1
+            d1 = cnts[0] - cnts[1]
+            d2 = cnts[1] - cnts[2]
+            key = (d1, d2)
+            if key in diff_map:
+                ans = max(ans, i - diff_map[key])
+            else:
+                diff_map[key] = i
+        return ans
