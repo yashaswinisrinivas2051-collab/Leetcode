@@ -1,0 +1,25 @@
+class Solution:
+    def readBinaryWatch(self, turnedOn: int) -> List[str]:
+        result = []
+        
+        # Check all possible hours and minutes
+        for hour in range(12):
+            for minute in range(60):
+                
+                # Count total LEDs ON
+                total_ones = bin(hour).count('1') + bin(minute).count('1')
+                
+                if total_ones == turnedOn:
+                    # Format time correctly
+                    time = f"{hour}:{minute:02d}"
+                    result.append(time)
+        
+        return result
+
+
+# Example Usage
+sol = Solution()
+print(sol.readBinaryWatch(1))
+print(sol.readBinaryWatch(9))
+
+        
