@@ -1,0 +1,17 @@
+class Solution:
+    def hasAllCodes(self, s: str, k: int) -> bool:
+        # If total possible substrings cannot fit in s
+        if len(s) < (1 << k) + k - 1:
+            return False
+        
+        seen = set()
+        
+        for i in range(len(s) - k + 1):
+            seen.add(s[i:i+k])
+            
+            # If we already found all possible codes
+            if len(seen) == (1 << k):
+                return True
+        
+        return len(seen) == (1 << k)
+        
