@@ -1,0 +1,19 @@
+class Solution:
+    def numSteps(self, s: str) -> int:
+        steps = 0
+        carry = 0
+        
+        # Traverse from right to left (ignore first bit for now)
+        for i in range(len(s) - 1, 0, -1):
+            bit = int(s[i])
+            
+            # If current bit + carry is 1 (odd number)
+            if bit + carry == 1:
+                steps += 2      # add 1 + divide by 2
+                carry = 1       # carry generated
+            else:
+                steps += 1      # just divide by 2
+        
+        # If carry remains after processing all bits
+        return steps + carry
+        
