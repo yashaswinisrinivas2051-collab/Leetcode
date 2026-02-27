@@ -1,0 +1,21 @@
+class Solution:
+    def minOperations(self, s: str, k: int) -> int:
+        n = len(s)
+        z = s.count('0')
+        dist = [math.inf]*(n+1)
+        dist[z] = 0
+        sets = [SortedList(range(0,n+1,2)), SortedList(range(1,n+1,2))]
+        sets[z%2].remove(z)
+        q = deque([z])
+        while q:
+            x = q.popleft()
+            lo = x + k - 2*min(x,k)
+            hi = x + k - 2*max(0,k-(n-x))
+            S = sets[lo%2]
+            i = S.bisect_left(lo)
+            while i < len(S) and S[i] <= hi:
+                y = S[i]
+                dist[y] = dist[x] + 1
+                q.append(y)
+                S.pop(i)
+        return -1 if dist[0]==math.inf else dist[0]
