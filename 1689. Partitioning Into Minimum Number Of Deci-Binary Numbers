@@ -1,0 +1,6 @@
+class Solution:
+    def minPartitions(self, n: str) -> int:
+        # The minimum number of deci-binary numbers required
+        # is equal to the maximum digit in n
+        return int(max(n))
+        
