@@ -1,0 +1,72 @@
+class DSU:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, x, y):
+        px, py = self.find(x), self.find(y)
+        if px == py:
+            return False
+
+        if self.rank[px] < self.rank[py]:
+            self.parent[px] = py
+        elif self.rank[px] > self.rank[py]:
+            self.parent[py] = px
+        else:
+            self.parent[py] = px
+            self.rank[px] += 1
+
+        return True
+
+
+class Solution:
+    def maxStability(self, n: int, edges: list[list[int]], k: int) -> int:
+
+        def can(x):
+            dsu = DSU(n)
+            upgrades = 0
+            count = 0
+
+            # include mandatory edges
+            for u, v, s, must in edges:
+                if must:
+                    if s < x:
+                        return False
+                    if not dsu.union(u, v):
+                        return False
+                    count += 1
+
+            # normal edges
+            for u, v, s, must in edges:
+                if must == 0 and s >= x:
+                    if dsu.union(u, v):
+                        count += 1
+
+            # upgraded edges
+            for u, v, s, must in edges:
+                if must == 0 and s < x and 2 * s >= x:
+                    if upgrades == k:
+                        break
+                    if dsu.union(u, v):
+                        upgrades += 1
+                        count += 1
+
+            return count == n - 1
+
+        left, right = 0, 2 * max(s for _, _, s, _ in edges)
+        ans = -1
+
+        while left <= right:
+            mid = (left + right) // 2
+            if can(mid):
+                ans = mid
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        return ans
