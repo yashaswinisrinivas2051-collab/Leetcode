@@ -1,0 +1,38 @@
+from typing import List
+
+class Solution:
+    def numberOfSubmatrices(self, grid: List[List[str]]) -> int:
+        m, n = len(grid), len(grid[0])
+        
+        # prefix sum for values (X=+1, Y=-1, .=0)
+        ps = [[0] * (n + 1) for _ in range(m + 1)]
+        
+        # prefix sum for count of X
+        px = [[0] * (n + 1) for _ in range(m + 1)]
+        
+        # Build prefix sums
+        for i in range(m):
+            for j in range(n):
+                val = 0
+                if grid[i][j] == 'X':
+                    val = 1
+                elif grid[i][j] == 'Y':
+                    val = -1
+                
+                ps[i+1][j+1] = val + ps[i][j+1] + ps[i+1][j] - ps[i][j]
+                
+                x_val = 1 if grid[i][j] == 'X' else 0
+                px[i+1][j+1] = x_val + px[i][j+1] + px[i+1][j] - px[i][j]
+        
+        ans = 0
+        
+        # Check all submatrices from (0,0) to (i,j)
+        for i in range(m):
+            for j in range(n):
+                total = ps[i+1][j+1]
+                x_count = px[i+1][j+1]
+                
+                if total == 0 and x_count > 0:
+                    ans += 1
+        
+        return ans
