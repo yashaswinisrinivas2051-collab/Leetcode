@@ -1,0 +1,129 @@
+from collections import Counter
+class Solution:
+    def canPartitionGrid(self, grid: List[List[int]]) -> bool:
+        m, n = len(grid), len(grid[0])
+        total = sum(sum(row) for row in grid)
+
+        # Helper: check if we can remove safely
+        def can_remove(counter, diff, is_single_row, is_single_col, edge_values):
+            if diff not in counter:
+                return False
+
+            # If not a thin strip → always safe
+            if not is_single_row and not is_single_col:
+                return True
+
+            # If thin strip → must remove from edge
+            return diff in edge_values
+
+        # -------- Horizontal Cuts --------
+        top_sum = 0
+        top_counter = Counter()
+        bottom_counter = Counter()
+
+        for row in grid:
+            bottom_counter.update(row)
+
+        for i in range(m - 1):
+            for val in grid[i]:
+                top_sum += val
+                top_counter[val] += 1
+                bottom_counter[val] -= 1
+                if bottom_counter[val] == 0:
+                    del bottom_counter[val]
+
+            bottom_sum = total - top_sum
+
+            if top_sum == bottom_sum:
+                return True
+
+            diff = abs(top_sum - bottom_sum)
+
+            # TOP section shape
+            top_rows = i + 1
+            is_top_single_row = top_rows == 1
+            is_top_single_col = n == 1
+
+            # BOTTOM section shape
+            bottom_rows = m - (i + 1)
+            is_bottom_single_row = bottom_rows == 1
+            is_bottom_single_col = n == 1
+
+            # Edge values
+            top_edges = set()
+            bottom_edges = set()
+
+            if is_top_single_row:
+                top_edges = {grid[0][0], grid[0][-1]}
+            if is_bottom_single_row:
+                bottom_edges = {grid[-1][0], grid[-1][-1]}
+
+            if is_top_single_col:
+                top_edges = {grid[0][0], grid[i][0]}
+            if is_bottom_single_col:
+                bottom_edges = {grid[i+1][0], grid[-1][0]}
+
+            # Try removing
+            if top_sum > bottom_sum:
+                if can_remove(top_counter, diff, is_top_single_row, is_top_single_col, top_edges):
+                    return True
+            else:
+                if can_remove(bottom_counter, diff, is_bottom_single_row, is_bottom_single_col, bottom_edges):
+                    return True
+
+        # -------- Vertical Cuts --------
+        left_sum = 0
+        left_counter = Counter()
+        right_counter = Counter()
+
+        for row in grid:
+            right_counter.update(row)
+
+        for j in range(n - 1):
+            for i in range(m):
+                val = grid[i][j]
+                left_sum += val
+                left_counter[val] += 1
+                right_counter[val] -= 1
+                if right_counter[val] == 0:
+                    del right_counter[val]
+
+            right_sum = total - left_sum
+
+            if left_sum == right_sum:
+                return True
+
+            diff = abs(left_sum - right_sum)
+
+            # LEFT shape
+            left_cols = j + 1
+            is_left_single_col = left_cols == 1
+            is_left_single_row = m == 1
+
+            # RIGHT shape
+            right_cols = n - (j + 1)
+            is_right_single_col = right_cols == 1
+            is_right_single_row = m == 1
+
+            # Edge values
+            left_edges = set()
+            right_edges = set()
+
+            if is_left_single_col:
+                left_edges = {grid[0][0], grid[-1][0]}
+            if is_right_single_col:
+                right_edges = {grid[0][-1], grid[-1][-1]}
+
+            if is_left_single_row:
+                left_edges = {grid[0][0], grid[0][j]}
+            if is_right_single_row:
+                right_edges = {grid[0][j+1], grid[0][-1]}
+
+            if left_sum > right_sum:
+                if can_remove(left_counter, diff, is_left_single_row, is_left_single_col, left_edges):
+                    return True
+            else:
+                if can_remove(right_counter, diff, is_right_single_row, is_right_single_col, right_edges):
+                    return True
+
+        return False
