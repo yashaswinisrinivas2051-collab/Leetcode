@@ -1,0 +1,23 @@
+from typing import List
+
+class Solution:
+    def areSimilar(self, mat: List[List[int]], k: int) -> bool:
+        m = len(mat)
+        n = len(mat[0])
+        
+        shift = k % n  # effective shift
+        
+        for i in range(m):
+            for j in range(n):
+                # For even rows (left shift)
+                if i % 2 == 0:
+                    new_j = (j + shift) % n
+                # For odd rows (right shift)
+                else:
+                    new_j = (j - shift + n) % n
+                
+                # Check if element matches original
+                if mat[i][j] != mat[i][new_j]:
+                    return False
+        
+        return True
