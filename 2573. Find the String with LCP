@@ -1,0 +1,58 @@
+class Solution:
+    def findTheString(self, lcp: List[List[int]]) -> str:
+        n = len(lcp)
+
+        # Step 1: Basic validation
+        for i in range(n):
+            if lcp[i][i] != n - i:
+                return ""
+
+        # Step 2: Union-Find (DSU)
+        parent = list(range(n))
+
+        def find(x):
+            if parent[x] != x:
+                parent[x] = find(parent[x])
+            return parent[x]
+
+        def union(x, y):
+            px, py = find(x), find(y)
+            if px != py:
+                parent[py] = px
+
+        # Step 3: Merge indices where lcp[i][j] > 0
+        for i in range(n):
+            for j in range(n):
+                if lcp[i][j] > 0:
+                    union(i, j)
+
+        # Step 4: Assign characters (lexicographically smallest)
+        group_to_char = {}
+        res = [''] * n
+        current_char = 'a'
+
+        for i in range(n):
+            root = find(i)
+            if root not in group_to_char:
+                if current_char > 'z':
+                    return ""
+                group_to_char[root] = current_char
+                current_char = chr(ord(current_char) + 1)
+            res[i] = group_to_char[root]
+
+        word = "".join(res)
+
+        # Step 5: Validate by recomputing LCP
+        dp = [[0] * (n + 1) for _ in range(n + 1)]
+
+        for i in range(n - 1, -1, -1):
+            for j in range(n - 1, -1, -1):
+                if word[i] == word[j]:
+                    dp[i][j] = 1 + dp[i + 1][j + 1]
+                else:
+                    dp[i][j] = 0
+
+                if dp[i][j] != lcp[i][j]:
+                    return ""
+
+        return word
