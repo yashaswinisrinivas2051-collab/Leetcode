@@ -1,0 +1,22 @@
+from typing import List
+from collections import defaultdict
+
+class Solution:
+    def minimumDistance(self, nums: List[int]) -> int:
+        index_map = defaultdict(list)
+        
+        # Store indices for each number
+        for i, num in enumerate(nums):
+            index_map[num].append(i)
+        
+        min_distance = float('inf')
+        
+        # Check each number's index list
+        for indices in index_map.values():
+            if len(indices) >= 3:
+                # Check consecutive triples
+                for i in range(len(indices) - 2):
+                    dist = 2 * (indices[i + 2] - indices[i])
+                    min_distance = min(min_distance, dist)
+        
+        return min_distance if min_distance != float('inf') else -1
