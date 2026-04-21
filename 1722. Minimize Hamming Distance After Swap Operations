@@ -1,0 +1,48 @@
+class Solution:
+    def minimumHammingDistance(self, source: List[int], target: List[int], allowedSwaps: List[List[int]]) -> int:
+        parent = list(range(len(source)))
+
+        # Find with path compression
+        def find(x):
+            if parent[x] != x:
+                parent[x] = find(parent[x])
+            return parent[x]
+
+        # Union
+        def union(x, y):
+            rootX = find(x)
+            rootY = find(y)
+            if rootX != rootY:
+                parent[rootY] = rootX
+
+        # Step 1: Build connected components
+        for a, b in allowedSwaps:
+            union(a, b)
+
+        # Step 2: Group indices by root
+        groups = defaultdict(list)
+        for i in range(len(source)):
+            root = find(i)
+            groups[root].append(i)
+
+        # Step 3: Calculate minimum Hamming distance
+        hamming_distance = 0
+
+        for indices in groups.values():
+            source_count = Counter()
+            target_count = Counter()
+
+            for i in indices:
+                source_count[source[i]] += 1
+                target_count[target[i]] += 1
+
+            # Count mismatches
+            for val in source_count:
+                if val in target_count:
+                    matched = min(source_count[val], target_count[val])
+                    source_count[val] -= matched
+
+            # Remaining elements are mismatches
+            hamming_distance += sum(source_count.values())
+
+        return hamming_distance
