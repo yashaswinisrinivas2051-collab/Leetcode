@@ -1,0 +1,17 @@
+class Solution:
+    def findThePrefixCommonArray(self, A: List[int], B: List[int]) -> List[int]:
+        n = len(A)
+        
+        setA = set()
+        setB = set()
+        result = []
+        
+        for i in range(n):
+            setA.add(A[i])
+            setB.add(B[i])
+            
+            # Count common elements
+            common = len(setA & setB)
+            result.append(common)
+        
+        return result
