@@ -1,0 +1,48 @@
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.best_index = -1
+        self.best_length = float('inf')
+
+
+class Solution:
+    def stringIndices(self, wordsContainer: List[str], wordsQuery: List[str]) -> List[int]:
+        root = TrieNode()
+
+        # Function to update best index at each node
+        def update(node, length, index):
+            if (length < node.best_length or
+               (length == node.best_length and index < node.best_index)):
+                node.best_length = length
+                node.best_index = index
+
+        # Build reversed trie
+        for idx, word in enumerate(wordsContainer):
+            rev_word = word[::-1]
+
+            node = root
+            update(node, len(word), idx)
+
+            for ch in rev_word:
+                if ch not in node.children:
+                    node.children[ch] = TrieNode()
+
+                node = node.children[ch]
+                update(node, len(word), idx)
+
+        ans = []
+
+        # Process queries
+        for word in wordsQuery:
+            rev_word = word[::-1]
+
+            node = root
+
+            for ch in rev_word:
+                if ch not in node.children:
+                    break
+                node = node.children[ch]
+
+            ans.append(node.best_index)
+
+        return ans
