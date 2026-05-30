@@ -1,0 +1,106 @@
+from typing import List
+
+class FenwickMax:
+    def __init__(self, n):
+        self.n = n
+        self.bit = [0] * (n + 1)
+
+    def update(self, idx, val):
+        idx += 1
+        while idx <= self.n:
+            self.bit[idx] = max(self.bit[idx], val)
+            idx += idx & -idx
+
+    def query(self, idx):
+        idx += 1
+        res = 0
+        while idx > 0:
+            res = max(res, self.bit[idx])
+            idx -= idx & -idx
+        return res
+
+
+class FenwickCount:
+    def __init__(self, n):
+        self.n = n
+        self.bit = [0] * (n + 1)
+
+    def add(self, idx, delta):
+        idx += 1
+        while idx <= self.n:
+            self.bit[idx] += delta
+            idx += idx & -idx
+
+    def query(self, idx):
+        idx += 1
+        res = 0
+        while idx > 0:
+            res += self.bit[idx]
+            idx -= idx & -idx
+        return res
+
+    def kth(self, k):
+        """smallest index with prefix sum >= k"""
+        idx = 0
+        bitmask = 1 << (self.n.bit_length() - 1)
+
+        while bitmask:
+            nxt = idx + bitmask
+            if nxt <= self.n and self.bit[nxt] < k:
+                k -= self.bit[nxt]
+                idx = nxt
+            bitmask >>= 1
+
+        return idx  # 0-based position
+
+
+class Solution:
+    def getResults(self, queries: List[List[int]]) -> List[bool]:
+        MAX_X = 50001
+
+        obstacles = set()
+        for q in queries:
+            if q[0] == 1:
+                obstacles.add(q[1])
+
+        # Active obstacles in the reversed process
+        active = obstacles | {0}
+
+        cntBIT = FenwickCount(MAX_X + 2)
+        for p in active:
+            cntBIT.add(p, 1)
+
+        maxBIT = FenwickMax(MAX_X + 2)
+
+        pts = sorted(active)
+        for i in range(1, len(pts)):
+            maxBIT.update(pts[i], pts[i] - pts[i - 1])
+
+        ans = []
+
+        for q in reversed(queries):
+            if q[0] == 2:
+                _, x, sz = q
+
+                c = cntBIT.query(x)
+                pre = cntBIT.kth(c)  # greatest obstacle <= x
+
+                best_gap = max(maxBIT.query(x), x - pre)
+                ans.append(best_gap >= sz)
+
+            else:
+                _, x = q
+
+                # neighbors before removing obstacle x
+                left_count = cntBIT.query(x - 1)
+                prev_obs = cntBIT.kth(left_count)
+
+                right_count = cntBIT.query(x) + 1
+                next_obs = cntBIT.kth(right_count)
+
+                cntBIT.add(x, -1)
+
+                # merged gap after removing x
+                maxBIT.update(next_obs, next_obs - prev_obs)
+
+        return ans[::-1]
