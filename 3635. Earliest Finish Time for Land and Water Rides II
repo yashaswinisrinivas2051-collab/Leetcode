@@ -1,0 +1,70 @@
+class Solution:
+    def earliestFinishTime(self, landStartTime, landDuration,
+                           waterStartTime, waterDuration):
+        INF = float('inf')
+
+        # ---------- Water preprocessing ----------
+        waters = sorted(zip(waterStartTime, waterDuration))
+        ws = [s for s, d in waters]
+        wd = [d for s, d in waters]
+        m = len(waters)
+
+        prefixMinWd = [0] * m
+        prefixMinWd[0] = wd[0]
+        for i in range(1, m):
+            prefixMinWd[i] = min(prefixMinWd[i - 1], wd[i])
+
+        suffixMinWsWd = [0] * m
+        suffixMinWsWd[-1] = ws[-1] + wd[-1]
+        for i in range(m - 2, -1, -1):
+            suffixMinWsWd[i] = min(
+                suffixMinWsWd[i + 1],
+                ws[i] + wd[i]
+            )
+
+        ans = INF
+
+        # Land -> Water
+        for ls, ld in zip(landStartTime, landDuration):
+            landEnd = ls + ld
+
+            idx = bisect_right(ws, landEnd) - 1
+
+            if idx >= 0:
+                ans = min(ans, landEnd + prefixMinWd[idx])
+
+            if idx + 1 < m:
+                ans = min(ans, suffixMinWsWd[idx + 1])
+
+        # ---------- Land preprocessing ----------
+        lands = sorted(zip(landStartTime, landDuration))
+        ls = [s for s, d in lands]
+        ld = [d for s, d in lands]
+        n = len(lands)
+
+        prefixMinLd = [0] * n
+        prefixMinLd[0] = ld[0]
+        for i in range(1, n):
+            prefixMinLd[i] = min(prefixMinLd[i - 1], ld[i])
+
+        suffixMinLsLd = [0] * n
+        suffixMinLsLd[-1] = ls[-1] + ld[-1]
+        for i in range(n - 2, -1, -1):
+            suffixMinLsLd[i] = min(
+                suffixMinLsLd[i + 1],
+                ls[i] + ld[i]
+            )
+
+        # Water -> Land
+        for ws0, wd0 in zip(waterStartTime, waterDuration):
+            waterEnd = ws0 + wd0
+
+            idx = bisect_right(ls, waterEnd) - 1
+
+            if idx >= 0:
+                ans = min(ans, waterEnd + prefixMinLd[idx])
+
+            if idx + 1 < n:
+                ans = min(ans, suffixMinLsLd[idx + 1])
+
+        return ans
