@@ -1,0 +1,88 @@
+class Solution:
+    def totalWaviness(self, num1: int, num2: int) -> int:
+        def solve(n: int) -> int:
+            if n <= 0:
+                return 0
+
+            digits = list(map(int, str(n)))
+            m = len(digits)
+
+            @lru_cache(None)
+            def dp(pos, tight, started, prev2, prev1, length):
+                """
+                Returns:
+                    (count_numbers, total_waviness_sum)
+                """
+
+                if pos == m:
+                    # Count one valid number only if at least one digit was started.
+                    return (1, 0) if started else (0, 0)
+
+                limit = digits[pos] if tight else 9
+
+                total_cnt = 0
+                total_wavy = 0
+
+                for d in range(limit + 1):
+                    ntight = tight and (d == limit)
+
+                    if not started and d == 0:
+                        cnt, wav = dp(
+                            pos + 1,
+                            ntight,
+                            False,
+                            10,   # dummy
+                            10,   # dummy
+                            0
+                        )
+                        total_cnt += cnt
+                        total_wavy += wav
+
+                    else:
+                        if not started:
+                            # First significant digit
+                            cnt, wav = dp(
+                                pos + 1,
+                                ntight,
+                                True,
+                                10,  # no previous digit yet
+                                d,
+                                1
+                            )
+                            total_cnt += cnt
+                            total_wavy += wav
+
+                        else:
+                            add = 0
+
+                            # If we already have at least 2 digits,
+                            # prev1 becomes an interior digit after adding d.
+                            if length >= 2:
+                                if (prev1 > prev2 and prev1 > d) or \
+                                   (prev1 < prev2 and prev1 < d):
+                                    add = 1
+
+                            cnt, wav = dp(
+                                pos + 1,
+                                ntight,
+                                True,
+                                prev1,
+                                d,
+                                length + 1
+                            )
+
+                            total_cnt += cnt
+                            total_wavy += wav + add * cnt
+
+                return (total_cnt, total_wavy)
+
+            return dp(0, True, False, 10, 10, 0)[1]
+
+        return solve(num2) - solve(num1 - 1)
+
+
+# Example usage:
+# sol = Solution()
+# print(sol.totalWaviness(120, 130))   # 3
+# print(sol.totalWaviness(198, 202))   # 3
+# print(sol.totalWaviness(4848, 4848)) # 2
